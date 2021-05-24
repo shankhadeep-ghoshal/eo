@@ -2,6 +2,7 @@ package org.eolang;
 
 import org.eolang.core.EOObject;
 import org.eolang.core.data.EODataObject;
+import org.eolang.txt.EOsprintf;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -87,94 +88,104 @@ class EOarrayTest {
     }
 
     /***
-     * Test for {@code EOreduce}
-     * Checks if the reduction operation returns the correct subtotal/results
+     * Checks that {@code EOreduce} is able to reduce an int array to a sum of its elements.
      */
     @Test
-    void EOreduce() {
-        EOarray array = new EOarray(
-                new EODataObject(1),
-                new EODataObject(3),
-                new EODataObject(5),
-                new EODataObject(7),
-                new EODataObject(9)
+    void EOreduceSumsIntArray() {
+        EOarray inputArray = new EOarray(
+                new EOint(1),
+                new EOint(3),
+                new EOint(5),
+                new EOint(7),
+                new EOint(9)
         );
-        EOObject a = array.EOreduce(new EODataObject(0), new EOObject() {
-            public EOObject EOreduce(EOObject subtotal, EOObject element) {
-                return new EODataObject(
-                        new EOint(
-                                subtotal._getData().toInt()
-                        )._getAttribute("EOadd", element)._getData().toInt()
-                );
+        Long expectedResult = 25L;
+        EOObject reducerObject = new EOObject() {
+            public EOObject EOreduce(EOint subtotal, EOObject element) {
+                return new EOObject() {
+                    @Override
+                    protected EOObject _decoratee() {
+                        // adds the current element of the array to the subtotal
+                        return subtotal.EOadd(element);
+                    }
+                };
             }
-        });
-        MatcherAssert.assertThat(a._getData().toInt(), Matchers.equalTo(25L));
+        };
+        EOint initialAccumulator = new EOint(0);
+        EOObject reducedValue = inputArray.EOreduce(initialAccumulator, reducerObject);
+
+        MatcherAssert.assertThat(reducedValue._getData().toInt(), Matchers.equalTo(expectedResult));
     }
 
     /***
-     * Test for {@code EOmap}
-     * Checks if the map operation correctly maps each element of an array to another value (the square) correctly
+     * Checks that {@code EOmap} is able to map an int array to an array of squares of its elements.
      */
     @Test
-    void EOmap() {
-        EOarray array = new EOarray(
-                new EODataObject(1),
-                new EODataObject(3),
-                new EODataObject(5),
-                new EODataObject(7),
-                new EODataObject(9)
+    void EOmapTransformsIntArrayToItsSquares() {
+        EOarray inputArray = new EOarray(
+                new EOint(1),
+                new EOint(3),
+                new EOint(5),
+                new EOint(7),
+                new EOint(9)
         );
-        EOarray expectedArray = new EOarray(
-                new EODataObject(1),
-                new EODataObject(9),
-                new EODataObject(25),
-                new EODataObject(49),
-                new EODataObject(81)
+        EOarray expectedResultArray = new EOarray(
+                new EOint(1),
+                new EOint(9),
+                new EOint(25),
+                new EOint(49),
+                new EOint(81)
         );
-        EOarray newArray = array.EOmap(new EOObject() {
-            public EOObject EOmap(EOObject element) {
-                return new EODataObject(
-                        new EOint(
-                                element._getData().toInt()
-                        )._getAttribute("EOpow", new EODataObject(2))._getData().toInt()
-                );
+        EOObject mapperObject = new EOObject() {
+            public EOObject EOmap(EOint element) {
+                return new EOObject() {
+                    @Override
+                    protected EOObject _decoratee() {
+                        return element.EOpow(new EOint(2));
+                    }
+                };
             }
-        });
-        for (int i = 0; i < array.EOlength()._getData().toInt(); i++)
-            MatcherAssert.assertThat(
-                    newArray.EOget(new EODataObject(i))._getData().toInt(),
-                    Matchers.equalTo(expectedArray.EOget(new EODataObject(i))._getData().toInt()));
+        };
+        EOarray resultArray = inputArray.EOmap(mapperObject);
+        MatcherAssert.assertThat(resultArray, Matchers.is(expectedResultArray));
     }
 
+    /***
+     * Checks that {@code EOmapi} is able to map a string array
+     * to an array of strings with indices concatenated to its elements.
+     */
     @Test
-    void EOmapi() {
-        EOarray array = new EOarray(
-                new EODataObject(1),
-                new EODataObject(3),
-                new EODataObject(5),
-                new EODataObject(7),
-                new EODataObject(9)
+    void EOmapiTransformsStringArrayUsingIndices() {
+        EOarray inputArray = new EOarray(
+                new EOstring("this"),
+                new EOstring("is"),
+                new EOstring("a"),
+                new EOstring("test"),
+                new EOstring("strings array")
         );
-        EOarray expectedArray = new EOarray(
-                new EODataObject(1),
-                new EODataObject(2),
-                new EODataObject(3),
-                new EODataObject(4),
-                new EODataObject(5)
+        EOarray expectedResultArray = new EOarray(
+                new EOstring("this0"),
+                new EOstring("is1"),
+                new EOstring("a2"),
+                new EOstring("test3"),
+                new EOstring("strings array4")
         );
-        EOarray newArray = array.EOmapi(new EOObject() {
-            public EOObject EOmapi(EOObject currentElement, EOObject index) {
-                return new EODataObject(
-                        new EOint(
-                                currentElement._getData().toInt()
-                        )._getAttribute("EOsub", index)._getData().toInt()
-                );
+        EOObject mapperObject = new EOObject() {
+            public EOObject EOmapi(EOstring element, EOint index) {
+                return new EOObject() {
+                    @Override
+                    protected EOObject _decoratee() {
+                        return new EOsprintf(
+                                    new EOstring("%s%d"),
+                                    element,
+                                    index
+                        );
+                    }
+                };
             }
-        });
-        for (int i = 0; i < array.EOlength()._getData().toInt(); i++)
-            MatcherAssert.assertThat(
-                    newArray.EOget(new EODataObject(i))._getData().toInt(),
-                    Matchers.equalTo(expectedArray.EOget(new EODataObject(i))._getData().toInt()));
+        };
+        EOarray resultArray = inputArray.EOmapi(mapperObject);
+        MatcherAssert.assertThat(resultArray, Matchers.is(expectedResultArray));
     }
 
 }
