@@ -33,13 +33,7 @@ public class EOFileWriter extends EOObject {
         this.dataToWrite = dataToWrite._getData().toString();
         this.charset = Charset.forName(charset._getData().toString());
 
-        standardOpenOptions = toAppend._getData().toBoolean()
-            ? new StandardOpenOption[]{StandardOpenOption.CREATE,
-            StandardOpenOption.WRITE,
-            StandardOpenOption.APPEND}
-            : new StandardOpenOption[]{StandardOpenOption.CREATE,
-                StandardOpenOption.WRITE,
-                StandardOpenOption.TRUNCATE_EXISTING};
+        standardOpenOptions = getStandardOpenOptions(toAppend);
     }
 
     /**
@@ -64,7 +58,7 @@ public class EOFileWriter extends EOObject {
      *
      * @return the absolute path of the file or empty string if some error occurs
      */
-    public EOstring EOWriteToTempFile() {
+    public EOstring EOwriteToTempFile() {
         return new EOstring(writeToTempFile(null, null, false));
     }
 
@@ -93,5 +87,15 @@ public class EOFileWriter extends EOObject {
         }
 
         return "";
+    }
+
+    private StandardOpenOption[] getStandardOpenOptions(EOObject toAppend) {
+        return toAppend._getData().toBoolean()
+            ? new StandardOpenOption[]{StandardOpenOption.CREATE,
+            StandardOpenOption.WRITE,
+            StandardOpenOption.APPEND}
+            : new StandardOpenOption[]{StandardOpenOption.CREATE,
+                StandardOpenOption.WRITE,
+                StandardOpenOption.TRUNCATE_EXISTING};
     }
 }
