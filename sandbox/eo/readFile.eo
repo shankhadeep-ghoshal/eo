@@ -1,0 +1,12 @@
++package sandbox
++alias sprintf org.eolang.txt.sprintf
++alias filereader org.eolang.io.file.FileReader
+
+[args...] > readFile
+  filereader "write.txt" "UTF-8" true > reader
+  reader.readFile > b
+  reader.readFileLines > c
+  sprintf > @
+    "%s\n %s\n"
+    b
+    c.get 0
