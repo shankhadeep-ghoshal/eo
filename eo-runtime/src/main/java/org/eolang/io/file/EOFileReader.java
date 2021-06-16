@@ -5,132 +5,76 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.eolang.EOarray;
+import org.eolang.EOByteArray;
+import org.eolang.EOint;
 import org.eolang.EOstring;
 import org.eolang.core.EOObject;
 
 /**
  * An object that can be used to perform file reading operations
+ *
+ * @version %I%, %G%
  */
 public class EOFileReader extends EOObject {
 
     private final Path filePath;
-    private final Charset charset;
-    private final boolean isLargeFile;
+    private final FileInputStream fis;
 
-    /**
-     * @param path          the location of the file
-     * @param charsetString the charset that the file to be read is in
-     * @param isLargeFile   if the file is large or not
-     */
-    public EOFileReader(EOObject path, EOObject charsetString, EOObject isLargeFile) {
-        if (path == null || charsetString == null || isLargeFile == null) {
-            throw new IllegalArgumentException("the file path or the charset string or the large "
-                + "file specifier cannot be null");
-        }
-        this.filePath = Paths.get(path._getData().toString());
-        this.charset = Charset.forName(charsetString._getData().toString());
-        this.isLargeFile = isLargeFile._getData().toBoolean();
+    public EOFileReader(EOstring filePath, EOstring charset, EOint byteBufferSize) {
+        final var path = filePath._getData().toString();
+        final var characterSet = charset._getData().toString();
+        final var bufSize = byteBufferSize._getData().toInt();
+
+        this.filePath = Paths.get(path);
+        final var charset1 = Charset.forName(characterSet);
+
+        this.fis = new FileInputStream(this.filePath, charset1, Math.toIntExact(bufSize));
     }
 
     /**
-     * @return an array of lines read from a file
+     * Reads a bunch of stuff into a buffer
+     *
+     * @return returns the number of bytes read or -1 if end of stream is read
+     * @apiNote to access the data, call the {@link EOFileReader#getReadData()} method after each
+     * function call to get the data in byes
      */
-    public EOarray EOreadFileLines() {
-        return convertJavaStringStreamToEOArray(readFileLines());
+    public EOint read() {
+        return new EOint(fis.read());
     }
 
     /**
-     * @return a string representing the entire text read
+     * @return a single line read as string
      */
-    public EOstring EOreadFile() {
-        return new EOstring(readFile());
+    public EOstring readLine() {
+        return new EOstring(fis.readLine());
     }
 
-    private EOarray convertJavaStringStreamToEOArray(final Supplier<Stream<String>> list) {
-        return new EOarray(list
-            .get()
-            .map(EOstring::new)
-            .toArray(EOstring[]::new));
-    }
-
-    private Supplier<Stream<String>> readFileLines() {
-        checkIsDirectory();
-
-        if (isLargeFile) {
-            return readLargeFileLines();
-        } else {
-            return readFileLinesNoBufferedReader();
-        }
-    }
-
-    private String readFile() {
-        checkIsDirectory();
-
-        if (isLargeFile) {
-            return readLargeFile();
-        } else {
-            return readLargeFileNoBufferedReader();
-        }
-    }
-
-    private String readLargeFileNoBufferedReader() {
+    /**
+     * @return an array of bytes as a result of reading all the contents of the file
+     * @apiNote Not to be used for reading large files
+     */
+    public EOByteArray readAllBytes() {
         try {
-            return Files.readString(filePath, charset);
+            return new EOByteArray(Files.readAllBytes(filePath));
         } catch (IOException e) {
             e.printStackTrace();
-        }
-
-        return "";
-    }
-
-    private String readLargeFile() {
-        try (final var line =
-            Files.newBufferedReader(filePath, charset).lines()) {
-            return line.collect(Collectors.joining());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
-
-    private Supplier<Stream<String>> readLargeFileLines() {
-        return () -> {
-            try {
-                return Files.newBufferedReader(filePath, charset).lines();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return Stream.empty();
-            }
-        };
-    }
-
-    private Supplier<Stream<String>> readFileLinesNoBufferedReader() {
-        return () -> {
-            try {
-                return Files.lines(filePath, charset);
-            } catch (IOException e) {
-                e.printStackTrace();
-                return Stream.empty();
-            }
-        };
-    }
-
-    private void checkIsDirectory() {
-        if (isDirectory()) {
-            try {
-                throw new IllegalAccessException("The specified path is that of a directory and "
-                    + "not a file");
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
+            return new EOByteArray();
         }
     }
 
-    private boolean isDirectory() {
-        return Files.isDirectory(filePath);
+    /**
+     * @return the byte array
+     */
+    public EOByteArray getReadData() {
+        return new EOByteArray(fis.getByteArray());
+    }
+
+    /**
+     * Cleans up resources like streams
+     * @return 1 as a formality
+     */
+    public EOint cleanup() {
+        fis.cleanup();
+        return new EOint(1L);
     }
 }
