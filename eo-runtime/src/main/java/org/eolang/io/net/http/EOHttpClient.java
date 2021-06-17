@@ -4,7 +4,7 @@ import org.eolang.EOint;
 import org.eolang.EOstring;
 import org.eolang.core.EOObject;
 import org.eolang.core.data.EOData;
-import org.eolang.internal.net.http.HttpClient;
+import org.eolang.internal.io.net.http.HttpClient;
 
 /**
  * A class representing an HTTP client

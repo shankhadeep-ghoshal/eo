@@ -1,4 +1,4 @@
-package org.eolang.internal.net.http;
+package org.eolang.internal.io.net.http;
 
 public class Header {
     private final String key;

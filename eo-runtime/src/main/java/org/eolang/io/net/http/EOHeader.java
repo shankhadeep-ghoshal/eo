@@ -2,7 +2,7 @@ package org.eolang.io.net.http;
 
 import org.eolang.EOstring;
 import org.eolang.core.EOObject;
-import org.eolang.internal.net.http.Header;
+import org.eolang.internal.io.net.http.Header;
 
 /**
  * A class denoting an HTTP header
