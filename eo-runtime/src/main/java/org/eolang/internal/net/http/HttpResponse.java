@@ -10,40 +10,37 @@ import java.nio.file.Path;
 public class HttpResponse {
 
     private final HttpClient httpClient;
-    private java.net.http.HttpResponse<?> httpResponse;
-
 
     public HttpResponse(HttpClient httpClient) {
         this.httpClient = httpClient;
     }
 
-    public void byteResponse(final HttpRequest httpRequest) {
+    public java.net.http.HttpResponse<byte[]> byteResponse(final HttpRequest httpRequest) {
         try {
-            httpResponse = httpClient.send(httpRequest, BodyHandlers.ofByteArray());
+            return httpClient.send(httpRequest, BodyHandlers.ofByteArray());
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
-            httpResponse = null;
+            return null;
         }
     }
 
-    public void stringResponse(final HttpRequest httpRequest, Charset charset) {
+    public java.net.http.HttpResponse<String> stringResponse(final HttpRequest httpRequest,
+        Charset charset) {
         try {
-            httpResponse = httpClient.send(httpRequest, BodyHandlers.ofString(charset));
+            return httpClient.send(httpRequest, BodyHandlers.ofString(charset));
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
-            httpResponse = null;
+            return null;
         }
     }
 
-    public void fileResponse(final HttpRequest httpRequest, final Path path) {
+    public java.net.http.HttpResponse<Path> fileResponse(final HttpRequest httpRequest,
+        final Path path) {
         try {
-            httpResponse = httpClient.send(httpRequest, BodyHandlers.ofFile(path));
+            return httpClient.send(httpRequest, BodyHandlers.ofFile(path));
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
+            return null;
         }
-    }
-
-    public java.net.http.HttpResponse<?> getHttpResponse() {
-        return this.httpResponse;
     }
 }

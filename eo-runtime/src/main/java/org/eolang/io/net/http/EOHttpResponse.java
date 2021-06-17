@@ -2,7 +2,6 @@ package org.eolang.io.net.http;
 
 import java.net.http.HttpRequest;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.eolang.EOByteArray;
 import org.eolang.EOstring;
@@ -22,20 +21,18 @@ public class EOHttpResponse extends EOObject {
 				response = new HttpResponse(httpClient.buildClient());
 		}
 
-		public EOstring stringResponse(final EOHttpRequest request, final EOstring charset) {
-				response.stringResponse((HttpRequest) request._getData().toObject(),
-						Charset.forName(charset._getData().toString()));
-				return new EOstring((String) response.getHttpResponse().body());
+		public EOstring EOstringResponse(final EOHttpRequest request, final EOstring charset) {
+				return new EOstring(response.stringResponse((HttpRequest) request._getData().toObject(),
+						Charset.forName(charset._getData().toString())).body());
 		}
 
-		public EOstring fileResponse(final EOHttpRequest request, final EOstring path) {
-				response.fileResponse((HttpRequest) request._getData().toObject(),
-						Paths.get(path._getData().toString()));
-				return new EOstring(((Path) response.getHttpResponse().body()).toAbsolutePath().toString());
+		public EOstring EOfileResponse(final EOHttpRequest request, final EOstring path) {
+				return new EOstring(response.fileResponse((HttpRequest) request._getData().toObject(),
+						Paths.get(path._getData().toString())).body().toAbsolutePath().toString());
 		}
 
-		public EOByteArray byteArrayResponse(final EOHttpRequest request) {
-				response.byteResponse((HttpRequest) request._getData().toObject());
-				return new EOByteArray((byte[]) response.getHttpResponse().body());
+		public EOByteArray EObyteArrayResponse(final EOHttpRequest request) {
+				return new EOByteArray(
+						response.byteResponse((HttpRequest) request._getData().toObject()).body());
 		}
 }

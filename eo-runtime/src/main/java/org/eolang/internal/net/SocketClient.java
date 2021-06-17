@@ -40,11 +40,6 @@ public class SocketClient {
         this.byteBuffer = ByteBuffer.allocate(byteBufferLength);
     }
 
-    public SocketClient(SocketChannel socketChannel, ByteBuffer byteBuffer) {
-        this.socketChannel = socketChannel;
-        this.byteBuffer = byteBuffer;
-    }
-
     public int readSocket() {
         try {
             this.byteBuffer.clear();
@@ -75,17 +70,11 @@ public class SocketClient {
 
     public void closeChannel() {
         try {
-            socketChannel.close();
+            if (socketChannel != null) {
+                socketChannel.close();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public SocketChannel getSocketChannel() {
-        return socketChannel;
-    }
-
-    public ByteBuffer getByteBuffer() {
-        return byteBuffer;
     }
 }
