@@ -1,0 +1,10 @@
++package sandbox
++alias sprintf org.eolang.txt.sprintf
++alias filewriter org.eolang.io.file.FileWriter
+
+[args...] > writeFile
+  filewriter "This is a text. This needs some work" "write.txt" "UTF-8" true > writer
+  writer.writeToFile > path
+  sprintf > @
+    "%s\n"
+    path
